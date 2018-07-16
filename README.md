@@ -1,2 +1,2 @@
-# DDb2pc
-Distributed database with 2pc protocol
+# DDb2PC
+Distributed Database with 2 phase commit protocol
