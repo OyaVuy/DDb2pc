@@ -80,11 +80,13 @@ int bindSocket(SOCKET* listenSocket, char* port)
 
 int connectToTarget(SOCKET* connectSocket, const char* addr, USHORT port)
 {
+	int iResult;
 	*connectSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (*connectSocket == INVALID_SOCKET)
 	{
+		iResult = WSAGetLastError();
 		ErrorHandlerTxt(TEXT("connectToTarget"));
-		return 1;
+		return iResult;;
 	}
 
 	sockaddr_in serverAddress;
@@ -94,23 +96,25 @@ int connectToTarget(SOCKET* connectSocket, const char* addr, USHORT port)
 
 	if (connect(*connectSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
 	{
-		ErrorHandlerTxt(TEXT("Unable to connect to master"));
+		int iResult = WSAGetLastError();
+		ErrorHandlerTxt(TEXT("Unable to connect to target"));
 		if (closesocket(*connectSocket) == SOCKET_ERROR)
 		{
 			ErrorHandlerTxt(TEXT("connectToTarget.connect.closesocket(connectSocket)"));
 		}
-		return 1;
+		return iResult;
 	}
 
 	unsigned long int nonBlockingMode = 1;
 	if (ioctlsocket(*connectSocket, FIONBIO, &nonBlockingMode) == SOCKET_ERROR)
 	{
+		iResult = WSAGetLastError();
 		ErrorHandlerTxt(TEXT("connectToTarget.ioctlsocket"));
 		if (closesocket(*connectSocket) == SOCKET_ERROR)
 		{
 			ErrorHandlerTxt(TEXT("main.connect.closesocket(connectSocket)"));
 		}
-		return 1;
+		return iResult;
 	}
 	return 0;
 }
@@ -135,7 +139,7 @@ int tryToSelect(SOCKET acceptedSocket, bool isSend, int sleepTime, int noAttempt
 		FD_SET set;
 		FD_ZERO(&set);
 		FD_SET(acceptedSocket, &set);
-	
+
 		timeval timeVal;
 
 		// both fields zero -> select returns immediately, it <does not block>
