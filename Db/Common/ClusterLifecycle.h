@@ -6,6 +6,7 @@
 #include <map>
 
 #define MAX_NODES_COUNT 30 
+#define NODE_PROBE_TIME 3000
 
 #pragma pack(1)
 
@@ -28,10 +29,19 @@ typedef struct {
 	int endpointId;
 }ExtendedEndpointElement;
 
-void  StoreEndpoint(std::map<int, EndpointElement>* storage, CRITICAL_SECTION* cs, int key, EndpointElement* element);
-void  StoreEndpoint(std::map<int, ExtendedEndpointElement>* storage, CRITICAL_SECTION* cs, int key, ExtendedEndpointElement* element);
+
+// todo add getters 
+
+void StoreEndpoint(std::map<int, EndpointElement>* storage, CRITICAL_SECTION* cs, int key, EndpointElement* element);
+void RemoveEndpoint(std::map<int, EndpointElement>* storage, CRITICAL_SECTION* cs, int key);
+
+void StoreEndpoint(std::map<int, ExtendedEndpointElement>* storage, CRITICAL_SECTION* cs, int key, ExtendedEndpointElement* element);
+void RemoveEndpoint(std::map<int, ExtendedEndpointElement>* storage, CRITICAL_SECTION* cs, int key);
 
 void StoreSocket(std::map<int, SOCKET>* storage, CRITICAL_SECTION* cs, int key, SOCKET* socket);
+void RemoveSocket(std::map<int, SOCKET>* storage, CRITICAL_SECTION* cs, int key);
 
-void RemoveElement(std::map<int, EndpointElement>* storage, CRITICAL_SECTION* cs, int key);
-void RemoveElement(std::map<int, ExtendedEndpointElement>* storage, CRITICAL_SECTION* cs, int key);
+void StoreHandle(std::map<int, HANDLE>* storage, CRITICAL_SECTION *cs, int key, HANDLE* handle);
+void RemoveHandle(std::map<int,HANDLE>* storage, CRITICAL_SECTION* cs, int key);
+
+

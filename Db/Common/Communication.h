@@ -64,4 +64,6 @@ int sendMessage(SOCKET communicationSocket, Message *msgToSend, int sleepTime, i
 void ErrorHandlerTxt(LPCTSTR lpszFunction);
 
 void ErrorHandlerMsgBox(LPCTSTR lpszFunction);
+
+// todo: add set to non blocking function // search on how many places
 #endif

@@ -7,11 +7,23 @@ void StoreEndpoint(std::map<int, EndpointElement>* storage, CRITICAL_SECTION* cs
 	storage->insert(std::make_pair(key, *element));
 	LeaveCriticalSection(cs);
 }
+void RemoveEndpoint(std::map<int, EndpointElement>* storage, CRITICAL_SECTION* cs, int key)
+{
+	EnterCriticalSection(cs);
+	storage->erase(key);
+	LeaveCriticalSection(cs);
+}
 
 void  StoreEndpoint(std::map<int, ExtendedEndpointElement>* storage, CRITICAL_SECTION* cs, int key, ExtendedEndpointElement* element)
 {
 	EnterCriticalSection(cs);
 	storage->insert(std::make_pair(key, *element));
+	LeaveCriticalSection(cs);
+}
+void RemoveEndpoint(std::map<int, ExtendedEndpointElement>* storage, CRITICAL_SECTION* cs, int key)
+{
+	EnterCriticalSection(cs);
+	storage->erase(key);
 	LeaveCriticalSection(cs);
 }
 
@@ -21,15 +33,20 @@ void StoreSocket(std::map<int, SOCKET>* storage, CRITICAL_SECTION* cs, int key, 
 	storage->insert(std::make_pair(key, *socket));
 	LeaveCriticalSection(cs);
 }
-
-void RemoveElement(std::map<int, EndpointElement>* storage, CRITICAL_SECTION* cs, int key) 
+void RemoveSocket(std::map<int, SOCKET>* storage, CRITICAL_SECTION* cs, int key)
 {
 	EnterCriticalSection(cs);
 	storage->erase(key);
 	LeaveCriticalSection(cs);
 }
 
-void RemoveElement(std::map<int, ExtendedEndpointElement>* storage, CRITICAL_SECTION* cs, int key)
+void StoreHandle(std::map<int, HANDLE>* storage, CRITICAL_SECTION *cs, int key, HANDLE* handle)
+{
+	EnterCriticalSection(cs);
+	storage->insert(std::make_pair(key, *handle));
+	LeaveCriticalSection(cs);
+}
+void RemoveHandle(std::map<int, HANDLE>* storage, CRITICAL_SECTION* cs, int key)
 {
 	EnterCriticalSection(cs);
 	storage->erase(key);
