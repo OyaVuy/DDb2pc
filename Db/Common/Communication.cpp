@@ -20,6 +20,20 @@ bool InitializeWindowsSockets()
 	return true;
 }
 
+int SetSocketToNonBlocking(SOCKET *socket)
+{
+	int iResult;
+	unsigned long int nonBlockingMode = 1;
+
+	iResult = ioctlsocket(*socket, FIONBIO, &nonBlockingMode);
+	if (iResult == SOCKET_ERROR)
+	{
+		ErrorHandlerTxt(TEXT("ioctlsocket"));
+	}
+
+	return iResult;
+}
+
 ///<param name='listenSocket'>A descriptor identifying an unbound socket.</param>
 ///<param name='port'>Service name or port number represented as a string.</param>
 /*
@@ -105,17 +119,15 @@ int connectToTarget(SOCKET* connectSocket, const char* addr, USHORT port)
 		return iResult;
 	}
 
-	unsigned long int nonBlockingMode = 1;
-	if (ioctlsocket(*connectSocket, FIONBIO, &nonBlockingMode) == SOCKET_ERROR)
-	{
-		iResult = WSAGetLastError();
-		ErrorHandlerTxt(TEXT("connectToTarget.ioctlsocket"));
+	if (SetSocketToNonBlocking(connectSocket) == SOCKET_ERROR)
+	{		
 		if (closesocket(*connectSocket) == SOCKET_ERROR)
 		{
 			ErrorHandlerTxt(TEXT("main.connect.closesocket(connectSocket)"));
 		}
-		return iResult;
+		return WSAGetLastError();
 	}
+
 	return 0;
 }
 
@@ -323,7 +335,7 @@ int sendMessage(SOCKET communicationSocket, Message *msgToSend, int sleepTime, i
 	int firstPartOfMessageBytesSent = 0;
 	int payloadBytesSent = 0;
 	int payloadLength = msgToSend->size - sizeof(MsgType);  // msgToSend->size equals payload size + sizeof(MsgType)
-	printf("\n\n------sendMessage, exactly %d bytes for sending", msgToSend->size + 4);
+	//printf("\n\n------sendMessage, exactly %d bytes for sending", msgToSend->size + 4);
 
 	iResult = tryToSelect(communicationSocket, true, sleepTime, noAttempt);
 	if (iResult == SOCKET_ERROR)
@@ -386,7 +398,7 @@ int sendMessage(SOCKET communicationSocket, Message *msgToSend, int sleepTime, i
 		payloadBytesSent += iResult;
 	}
 
-	printf("\n--------before sendMessage returning, sent totally %d bytes\n", payloadBytesSent + firstPartOfMessageBytesSent);
+	//printf("\n--------before sendMessage returning, sent totally %d bytes\n", payloadBytesSent + firstPartOfMessageBytesSent);
 	return payloadBytesSent + firstPartOfMessageBytesSent;
 }
 

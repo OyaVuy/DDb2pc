@@ -51,6 +51,8 @@ typedef struct
 
 bool InitializeWindowsSockets();
 
+int SetSocketToNonBlocking(SOCKET *socket);
+
 int bindSocket(SOCKET* listenSocket, char* port);
 
 int connectToTarget(SOCKET* connectSocket, const char* addr, USHORT port);
@@ -65,5 +67,4 @@ void ErrorHandlerTxt(LPCTSTR lpszFunction);
 
 void ErrorHandlerMsgBox(LPCTSTR lpszFunction);
 
-// todo: add set to non blocking function // search on how many places
 #endif

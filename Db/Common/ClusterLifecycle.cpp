@@ -39,6 +39,19 @@ void RemoveSocket(std::map<int, SOCKET>* storage, CRITICAL_SECTION* cs, int key)
 	storage->erase(key);
 	LeaveCriticalSection(cs);
 }
+SOCKET GetSocket(std::map<int, SOCKET>* storage, CRITICAL_SECTION* cs, int key)
+{
+	int retVal;
+
+	EnterCriticalSection(cs);	
+	std::map<int, SOCKET>::iterator targetIt=storage->find(key);
+	if (targetIt == storage->end()) // if does not exist
+		retVal = INVALID_SOCKET;
+	else
+		retVal = targetIt->second;
+	LeaveCriticalSection(cs);
+	return retVal;
+}
 
 void StoreHandle(std::map<int, HANDLE>* storage, CRITICAL_SECTION *cs, int key, HANDLE* handle)
 {

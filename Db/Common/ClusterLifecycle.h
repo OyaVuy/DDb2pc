@@ -29,9 +29,6 @@ typedef struct {
 	int endpointId;
 }ExtendedEndpointElement;
 
-
-// todo add getters 
-
 void StoreEndpoint(std::map<int, EndpointElement>* storage, CRITICAL_SECTION* cs, int key, EndpointElement* element);
 void RemoveEndpoint(std::map<int, EndpointElement>* storage, CRITICAL_SECTION* cs, int key);
 
@@ -40,6 +37,7 @@ void RemoveEndpoint(std::map<int, ExtendedEndpointElement>* storage, CRITICAL_SE
 
 void StoreSocket(std::map<int, SOCKET>* storage, CRITICAL_SECTION* cs, int key, SOCKET* socket);
 void RemoveSocket(std::map<int, SOCKET>* storage, CRITICAL_SECTION* cs, int key);
+SOCKET GetSocket(std::map<int, SOCKET>* storage, CRITICAL_SECTION* cs, int key);
 
 void StoreHandle(std::map<int, HANDLE>* storage, CRITICAL_SECTION *cs, int key, HANDLE* handle);
 void RemoveHandle(std::map<int,HANDLE>* storage, CRITICAL_SECTION* cs, int key);
