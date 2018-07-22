@@ -28,7 +28,9 @@ enum MsgType
 {
 	Error = 0,
 	Registration,
-	Data
+	Data,
+	ShutDown,
+	Ping
 };
 
 enum Errors

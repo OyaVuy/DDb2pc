@@ -263,7 +263,7 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 	else if (iResult == 0)
 	{
 		// If the virtual circuit was closed gracefully, and all the data was received, then a <recv> will return immediately with zero bytes read.
-		printf("\nPeer node closed connection gracefully.");
+		printf("\nTarget closed connection gracefully.");
 		return CLOSED_GRACEFULLY;
 	}
 	else if (iResult > 0)
@@ -304,7 +304,7 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 		// else cases -> there is no whole message received for sure
 		else if (iResult == 0)
 		{
-			printf("\nPeer node closed connection gracefully.");
+			printf("\nTarget closed connection gracefully.");
 			return CLOSED_GRACEFULLY;
 		}
 		else
