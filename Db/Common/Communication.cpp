@@ -100,7 +100,7 @@ int connectToTarget(SOCKET* connectSocket, const char* addr, USHORT port)
 	{
 		iResult = WSAGetLastError();
 		ErrorHandlerTxt(TEXT("connectToTarget"));
-		return iResult;;
+		return iResult;
 	}
 
 	sockaddr_in serverAddress;
@@ -116,15 +116,21 @@ int connectToTarget(SOCKET* connectSocket, const char* addr, USHORT port)
 		{
 			ErrorHandlerTxt(TEXT("connectToTarget.connect.closesocket(connectSocket)"));
 		}
-		return iResult;
+		else
+			*connectSocket = INVALID_SOCKET;
+
+			return iResult;
 	}
 
 	if (SetSocketToNonBlocking(connectSocket) == SOCKET_ERROR)
-	{		
+	{
 		if (closesocket(*connectSocket) == SOCKET_ERROR)
 		{
 			ErrorHandlerTxt(TEXT("main.connect.closesocket(connectSocket)"));
 		}
+		else
+			*connectSocket = INVALID_SOCKET;
+
 		return WSAGetLastError();
 	}
 
@@ -135,14 +141,16 @@ int connectToTarget(SOCKET* connectSocket, const char* addr, USHORT port)
 ///<param name='acceptedSocket'>Socket to be checked for readability/writeability</param>
 ///<param name='isSend'>bool flag that indicates operation to be checked on socket. <value>True</value> if socket is checking on for writeability <value>true</value>; otherwise <value>false</value></param>
 ///<param name='sleepTime'>Time in ms allowed to pass between current and next select attempt if there is no success or error indication in current attempt.</param>
+///<param name='selectTimeSec'>The maximum time for select to wait in seconds</param>
 ///<param name='noAttempt'>Max number of attempts for selecting before function returns; -1(INFINITE_ATTEMPT_NO) for infinite number of attempts </param>
 /*
 Trying to select socket ready for read/write in a non blocking manner. Parameters are Socket to be checked, bool flag that indicates operation (read/write) to be checked on socket,
 Time in ms allowed to pass between current and next select attempt if there is no success or error indication in current attempt,
+Time to wait in select in seconds,
 Max number of attempts for selecting before function returns; -1(INFINITE_ATTEMPT_NO) for infinite number of attempts.
 Returns SCOKET_ERROR if an error occured, 0 if time limit expired or number of sockets meeting a condition if selecting succeed.
 */
-int tryToSelect(SOCKET acceptedSocket, bool isSend, int sleepTime, int noAttempt)
+int tryToSelect(SOCKET acceptedSocket, bool isSend, int sleepTime, int selectTimeSec, int noAttempt)
 {
 	do
 	{
@@ -156,7 +164,7 @@ int tryToSelect(SOCKET acceptedSocket, bool isSend, int sleepTime, int noAttempt
 
 		// both fields zero -> select returns immediately, it <does not block>
 		// null value -> select block indefinitely
-		timeVal.tv_sec = 0;
+		timeVal.tv_sec = selectTimeSec;
 		timeVal.tv_usec = 0;
 
 		if (!isSend)
@@ -226,19 +234,20 @@ int tryToSelect(SOCKET acceptedSocket, bool isSend, int sleepTime, int noAttempt
 ///<param name='communicationSocket'>Socket on which receiveing of data should be performed</param>
 ///<param name='outputMsg'>Received data</param>
 ///<param name='sleepTime'>Time in ms allowed to pass between current and next select attempt to determine if socket is ready for receiving.</param>
+///<param name='selectTimeSec'>The maximum time for select to wait in seconds</param>
 ///<param name='noAttempt'>Max number of attempts for selecting for reading before function returns; -1(INFINITE_ATTEMPT_NO) for infinite number of attempts</param>
 ///<param name='isRegMsg'>Value that indicated that sleepTime and noAttempt parameters should be configured in runtime differently if it is registration message.</param>
 /*
 Trying to receive whole message. If succeed returns 0; otherwise special error code.
 */
-int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime, int noAttempt, bool isRegMsg)
+int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime, int selectTimeSec, int noAttempt, bool isRegMsg)
 {
 	int iResult;
 	int currLength = 0;
 	int expectedPayloadSize = -1;
 
 	//printf("\n------receiveMessage, before receiving first 8 header bytes");
-	iResult = tryToSelect(communicationSocket, false, sleepTime, noAttempt);
+	iResult = tryToSelect(communicationSocket, false, sleepTime, selectTimeSec, noAttempt);
 	if (iResult == SOCKET_ERROR)
 	{
 		iResult = WSAGetLastError();
@@ -247,8 +256,7 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 	}
 	if (iResult == 0)
 	{
-		printf("\nTime limit expired for select (recv) operation (first 8 bytes)");
-		ErrorHandlerTxt(TEXT("receiveMessage.tryToSelect (first 8 bytes)"));
+		//printf("\nTime limit expired for select (recv) operation (first 8 bytes)");
 		return TIMED_OUT;
 	}
 
@@ -282,7 +290,7 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 	while (currLength < expectedPayloadSize)
 	{
 		//printf("\n-------------Looping for receiving payload");
-		iResult = tryToSelect(communicationSocket, false, sleepTime, noAttempt);
+		iResult = tryToSelect(communicationSocket, false, sleepTime, selectTimeSec, noAttempt);
 		if (iResult == SOCKET_ERROR)
 		{
 			iResult = WSAGetLastError();
@@ -292,7 +300,6 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 		if (iResult == 0)
 		{
 			printf("\nTime limit expired for select operation (payload)");
-			ErrorHandlerTxt(TEXT("receiveMessage.tryToSelect (payload)"));
 			return TIMED_OUT;
 		}
 
@@ -315,7 +322,6 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 		}
 		//printf("\n-------------currently received = %d payload bytes", currLength);
 	}
-
 	//printf("\n----------before receiveMessage returning, received totally %d bytes\n", currLength + 8);
 	return 0;
 }
@@ -323,12 +329,13 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 ///<param name='communicationSocket'>Socket on which sending of data should be performed</param>
 ///<param name='msgToSend'>Data for sending</param>
 ///<param name='sleepTime'>Time in ms allowed to pass between current and next select attempt to determine if socket is ready for sending.</param>
+///<param name='selectTimeSec'>The maximum time for select to wait in seconds</param>
 ///<param name='noAttempt'>Max number of attempts for selecting for sending before function returns; -1(INFINITE_ATTEMPT_NO) for infinite number of attempts</param>
 ///<param name='isRegMsg'>Value that indicated that sleepTime and noAttempt parameters should be configured in runtime differently if it is registration message.</param>
 /*
 Trying to send whole message. If succeed returns expected number of bytes; otherwise special error code.
 */
-int sendMessage(SOCKET communicationSocket, Message *msgToSend, int sleepTime, int noAttempt, bool isRegMsg)
+int sendMessage(SOCKET communicationSocket, Message *msgToSend, int sleepTime, int selectTimeSec, int noAttempt, bool isRegMsg)
 {
 	int iResult = SOCKET_ERROR;
 
@@ -337,7 +344,7 @@ int sendMessage(SOCKET communicationSocket, Message *msgToSend, int sleepTime, i
 	int payloadLength = msgToSend->size - sizeof(MsgType);  // msgToSend->size equals payload size + sizeof(MsgType)
 	//printf("\n\n------sendMessage, exactly %d bytes for sending", msgToSend->size + 4);
 
-	iResult = tryToSelect(communicationSocket, true, sleepTime, noAttempt);
+	iResult = tryToSelect(communicationSocket, true, sleepTime, selectTimeSec, noAttempt);
 	if (iResult == SOCKET_ERROR)
 	{
 		iResult = WSAGetLastError();
@@ -346,8 +353,7 @@ int sendMessage(SOCKET communicationSocket, Message *msgToSend, int sleepTime, i
 	}
 	if (iResult == 0)
 	{
-		iResult = WSAGetLastError();
-		ErrorHandlerTxt(TEXT("sendMessage.tryToSelect (Time limit - first 8 bytes)"));
+		printf("\nTime limit expired for select operation (send) (Time limit - first 8 bytes)");
 		return TIMED_OUT;
 	}
 
@@ -373,7 +379,7 @@ int sendMessage(SOCKET communicationSocket, Message *msgToSend, int sleepTime, i
 
 	while (payloadBytesSent < payloadLength)
 	{
-		iResult = tryToSelect(communicationSocket, true, sleepTime, noAttempt);
+		iResult = tryToSelect(communicationSocket, true, sleepTime, selectTimeSec, noAttempt);
 		if (iResult == SOCKET_ERROR)
 		{
 			iResult = WSAGetLastError();
@@ -382,8 +388,7 @@ int sendMessage(SOCKET communicationSocket, Message *msgToSend, int sleepTime, i
 		}
 		if (iResult == 0)
 		{
-			printf("\nTime limit expired for select operation (payload)");
-			ErrorHandlerTxt(TEXT("sendMessage.tryToSelect (payload)"));
+			printf("\nTime limit expired for select operation (send) (payload)");
 			return TIMED_OUT;
 		}
 

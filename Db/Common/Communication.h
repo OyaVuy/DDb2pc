@@ -59,11 +59,11 @@ int bindSocket(SOCKET* listenSocket, char* port);
 
 int connectToTarget(SOCKET* connectSocket, const char* addr, USHORT port);
 
-int tryToSelect(SOCKET acceptedSocket, bool isSend, int sleepTime, int maxAttempt);
+int tryToSelect(SOCKET acceptedSocket, bool isSend, int sleepTime, int selectTimeSec, int noAttempt);
 
-int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime, int noAttempt, bool isRegMsg);
+int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime, int selectTimeSec, int noAttempt, bool isRegMsg);
 
-int sendMessage(SOCKET communicationSocket, Message *msgToSend, int sleepTime, int noAttempt, bool isRegMsg);
+int sendMessage(SOCKET communicationSocket, Message *msgToSend, int sleepTime, int selectTimeSec, int noAttempt, bool isRegMsg);
 
 void ErrorHandlerTxt(LPCTSTR lpszFunction);
 
