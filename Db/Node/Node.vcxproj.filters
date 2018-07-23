@@ -21,10 +21,7 @@
     <ClInclude Include="resource2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Queue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="2pc.h">
+    <ClInclude Include="CQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -32,7 +29,7 @@
     <ClCompile Include="Node.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="2pc.cpp">
+    <ClCompile Include="CQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

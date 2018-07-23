@@ -11,19 +11,36 @@
 #pragma pack(1)
 
 // Data for node registration in cluster
-typedef struct {
+typedef struct
+{
 	int nodeId;
 	int intIpAddress; // in little endian format
 	USHORT portForNodes;
 	USHORT portForClients;
 }NodeRegData;
 
-typedef struct {
+enum RequestType
+{
+	READ,
+	WRITE,
+	REMOVE
+};
+
+typedef struct
+{
+	int clientId;
+	RequestType reqType;
+	char* requestPayload;
+}ClientRequest;
+
+typedef struct
+{
 	int ipAddress;
 	USHORT port;
 }EndpointElement;
 
-typedef struct {
+typedef struct
+{
 	int ipAddress;
 	USHORT port;
 	int endpointId;
@@ -40,6 +57,6 @@ void RemoveSocket(std::map<int, SOCKET>* storage, CRITICAL_SECTION* cs, int key)
 SOCKET GetSocket(std::map<int, SOCKET>* storage, CRITICAL_SECTION* cs, int key);
 
 void StoreHandle(std::map<int, HANDLE>* storage, CRITICAL_SECTION *cs, int key, HANDLE* handle);
-void RemoveHandle(std::map<int,HANDLE>* storage, CRITICAL_SECTION* cs, int key);
+void RemoveHandle(std::map<int, HANDLE>* storage, CRITICAL_SECTION* cs, int key);
 
 

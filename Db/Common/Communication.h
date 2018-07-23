@@ -35,6 +35,7 @@ enum MsgType
 	PREPARE,
 	COMMIT,
 	ROLLBACK,
+	
 	Data
 };
 

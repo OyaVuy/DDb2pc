@@ -155,13 +155,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="2pc.h" />
-    <ClInclude Include="Queue.h" />
+    <ClInclude Include="CQueue.h" />
     <ClInclude Include="resource2.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="2pc.cpp" />
+    <ClCompile Include="CQueue.cpp" />
     <ClCompile Include="Node.cpp" />
   </ItemGroup>
   <ItemGroup>
