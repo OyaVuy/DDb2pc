@@ -19,20 +19,6 @@ typedef struct
 	USHORT portForClients;
 }NodeRegData;
 
-enum RequestType
-{
-	READ,
-	WRITE,
-	REMOVE
-};
-
-typedef struct
-{
-	int clientId;
-	RequestType reqType;
-	char* requestPayload;
-}ClientRequest;
-
 typedef struct
 {
 	int ipAddress;

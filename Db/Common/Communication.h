@@ -47,6 +47,13 @@ enum Errors
 	UNKNOWN
 };
 
+enum ClientRequestType
+{
+	READ,
+	WRITE,
+	REMOVE
+};
+
 /*
 	Generic message header, no matter if client or node initiates connection
 	first int should be size of message; then, according to expected size, whole message is read
@@ -59,6 +66,16 @@ typedef struct
 	char *payload;
 }Message;
 
+
+typedef struct
+{
+	// combination of these 3
+	// fileds uniquely identifies message
+	int clientId;
+	int originNodeId; // these two fields are setted up by node
+	int originNodeCounter;
+	ClientRequestType reqType;
+}ClientMessageHeader;
 
 bool InitializeWindowsSockets();
 
