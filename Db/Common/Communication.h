@@ -28,14 +28,22 @@ enum MsgType
 {
 	Error = 0,
 	Registration,
-	Data,
 	ShutDown,
-	Ping
+	Ping,
+
+	TransactionRequest,
+	PREPARE,
+	COMMIT,
+	ROLLBACK,
+	Data
 };
 
 enum Errors
 {
-	NON_UNIQUE_ID = 0
+	NON_UNIQUE_ID = 0,
+	TRANSACTION_ONLINE,
+	NON_SUPPORTED_OPERATION,
+	UNKNOWN
 };
 
 /*

@@ -265,7 +265,7 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 	if (iResult == SOCKET_ERROR)
 	{
 		iResult = WSAGetLastError();
-		ErrorHandlerTxt(TEXT("receiveMessage.recv (first 8 bytes)"));
+		//ErrorHandlerTxt(TEXT("receiveMessage.recv (first 8 bytes)"));
 		return iResult;
 	}
 	else if (iResult == 0)
