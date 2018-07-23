@@ -21,9 +21,15 @@
     <ClInclude Include="resource2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NodeStorage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Node.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeStorage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

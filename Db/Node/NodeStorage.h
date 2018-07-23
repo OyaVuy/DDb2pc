@@ -5,6 +5,12 @@
 
 #include <Windows.h>
 
+// mapraviti mapu samo jednog nivoa, za svakog klijenta imas po jednu listu
+// zgodno je da bude dvostruko spregnuta
+// i onda iteriras kroz tu listu redom i trazis sta ti treba...
+// dodajes liste cim se pojavi poruka od tog klijenta
+// prvo proveris jel postoji da lista
+
 #pragma pack(1)
 typedef struct
 {
@@ -15,16 +21,17 @@ typedef struct
 
 typedef struct StorageListNodeT
 {
-	int key;
-	StorageListNodeT* next;
-	void * nextLevelData;
+	int key1;
+	int key2;
+	StorageListNodeT* pNext;
+	StorageListNodeT* pPrevious;
+	void * data;
 }ListNode;
 
 typedef struct
 {
 	std::atomic <bool> isInit;
 	std::atomic <int> count;
-
 	CRITICAL_SECTION cs_Data;
 	ListNode* head;
 	ListNode* tail;
@@ -38,16 +45,12 @@ typedef struct
 	std::atomic <bool> isInit;
 	CRITICAL_SECTION cs_DataLvl_2;
 	CRITICAL_SECTION cs_DataLvl_3;
-	std::map<int, std::map<int, LinkedList>> level1_level2_Data;
+	std::map<int, LinkedList> data;
 }StorageManager;
 
-
 void InitStorage(StorageManager* storageMng);
-
-std::map<int, LinkedList> AddAndGetLevel2Data(StorageManager* level1storageMng, int level2key);
-LinkedList* AddAndGetLevel3Data(std::map<int, LinkedList>*  level2storage, CRITICAL_SECTION* cs, int level3key);
-
+void AddNewLinkedList(int key, LinkedList* list);
 void InitLinkedList(LinkedList* list);
-bool AddNodeToList(LinkedList* list, ListNode* node);
+void AddNodeToList(LinkedList* list, ListNode* node);
 ListNode* FindNodeInList(LinkedList* list, int nodeKey);
-//int StoreData(StorageManager* storageManager, Message* msgToStore);
+
