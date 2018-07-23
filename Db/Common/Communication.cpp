@@ -119,7 +119,7 @@ int connectToTarget(SOCKET* connectSocket, const char* addr, USHORT port)
 		else
 			*connectSocket = INVALID_SOCKET;
 
-			return iResult;
+		return iResult;
 	}
 
 	if (SetSocketToNonBlocking(connectSocket) == SOCKET_ERROR)
@@ -277,7 +277,8 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 	else if (iResult > 0)
 	{
 		expectedPayloadSize = outputMsg->size - 4;
-		outputMsg->payload = (char*)calloc(expectedPayloadSize, sizeof(char));
+		if (expectedPayloadSize >= 4)
+			outputMsg->payload = (char*)calloc(expectedPayloadSize, sizeof(char));
 		//printf("\n----------received first %d header bytes, expected %d payload bytes", iResult, expectedPayloadSize);
 	}
 
