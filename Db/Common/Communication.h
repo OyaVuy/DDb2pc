@@ -32,6 +32,8 @@ enum MsgType
 	Ping,
 
 	TransactionRequest,
+	TransactionRequestApproved,
+	TransactionRequestRejected,
 	PREPARE,
 	COMMIT,
 	ROLLBACK,
