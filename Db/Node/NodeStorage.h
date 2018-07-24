@@ -23,9 +23,10 @@ typedef struct StorageListNodeT
 {
 	int key1;
 	int key2;
+	int key3;
 	StorageListNodeT* pNext;
 	StorageListNodeT* pPrevious;
-	void * data;
+	char * pData;
 }ListNode;
 
 typedef struct
@@ -33,24 +34,23 @@ typedef struct
 	std::atomic <bool> isInit;
 	std::atomic <int> count;
 	CRITICAL_SECTION cs_Data;
-	ListNode* head;
-	ListNode* tail;
+	ListNode* pHead;
+	ListNode* pTail;
 }LinkedList;
 
 // level1 is accessing by clientId 
 // then we are on level2, where we have on access based on level2key
 typedef struct
 {
-	std::atomic <int> dataCount;
+	std::atomic <int> dataCount; // cumulative
+	std::atomic <int> dataCount_Lvl1;
 	std::atomic <bool> isInit;
-	CRITICAL_SECTION cs_DataLvl_2;
-	CRITICAL_SECTION cs_DataLvl_3;
-	std::map<int, LinkedList> data;
+	LinkedList* data_Lvl1;
 }StorageManager;
 
 void InitStorage(StorageManager* storageMng);
-void AddNewLinkedList(int key, LinkedList* list);
 void InitLinkedList(LinkedList* list);
 void AddNodeToList(LinkedList* list, ListNode* node);
+void StoreMessage(StorageManager* storage, Message* msgToStore);
 ListNode* FindNodeInList(LinkedList* list, int nodeKey);
 
