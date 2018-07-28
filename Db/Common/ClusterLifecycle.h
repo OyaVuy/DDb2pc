@@ -8,6 +8,12 @@
 #define MAX_NODES_COUNT 30 
 #define NODE_PROBE_TIME 3000
 
+// max time for receiving indication of finished transaction
+// if indication is not received - master on its own removes TransactionOnLine flag
+#define TRANSACTION_PENDING_TIME_OUT 5 // in seconds
+
+#define USER_CANCELLATION_TIME_MS 3000
+
 #pragma pack(1)
 
 // Data for node registration in cluster

@@ -14,14 +14,13 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
+#define SAFE_DELETE_HANDLE(a)  if(a){CloseHandle(a);} 
+
 #define DEFAULT_BUFLEN 8192 
 #define INFINITE_ATTEMPT_NO -1
 
-#define SAFE_DELETE_HANDLE(a)  if(a){CloseHandle(a);} 
-
 #define CLOSED_GRACEFULLY -2
 #define TIMED_OUT -3
-
 
 #pragma pack(1)
 enum MsgType
@@ -49,7 +48,7 @@ enum Errors
 	UNKNOWN
 };
 
-enum ClientRequestType
+enum TransactionRequestType
 {
 	READ,
 	WRITE,
@@ -76,7 +75,7 @@ typedef struct
 	int clientId;
 	int originNodeId; // these two fields are setted up by node
 	int originNodeCounter;
-	ClientRequestType reqType;
+	TransactionRequestType reqType;
 }ClientMessageHeader;
 
 bool InitializeWindowsSockets();

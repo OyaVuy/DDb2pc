@@ -233,21 +233,21 @@ int tryToSelect(SOCKET acceptedSocket, bool isSend, int sleepTime, int selectTim
 
 ///<param name='communicationSocket'>Socket on which receiveing of data should be performed</param>
 ///<param name='outputMsg'>Received data</param>
-///<param name='sleepTime'>Time in ms allowed to pass between current and next select attempt to determine if socket is ready for receiving.</param>
+///<param name='sleepTimeMs'>Time in ms allowed to pass between current and next select attempt to determine if socket is ready for receiving.</param>
 ///<param name='selectTimeSec'>The maximum time for select to wait in seconds</param>
 ///<param name='noAttempt'>Max number of attempts for selecting for reading before function returns; -1(INFINITE_ATTEMPT_NO) for infinite number of attempts</param>
-///<param name='isRegMsg'>Value that indicated that sleepTime and noAttempt parameters should be configured in runtime differently if it is registration message.</param>
+///<param name='isRegMsg'>Value that indicated that sleepTimeMs and noAttempt parameters should be configured in runtime differently if it is registration message.</param>
 /*
 Trying to receive whole message. If succeed returns 0; otherwise special error code.
 */
-int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime, int selectTimeSec, int noAttempt, bool isRegMsg)
+int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTimeMs, int selectTimeSec, int noAttempt, bool isRegMsg)
 {
 	int iResult;
-	int currLength = 0;
+	int currPayloadLength = 0;
 	int expectedPayloadSize = -1;
 
 	//printf("\n------receiveMessage, before receiving first 8 header bytes");
-	iResult = tryToSelect(communicationSocket, false, sleepTime, selectTimeSec, noAttempt);
+	iResult = tryToSelect(communicationSocket, false, sleepTimeMs, selectTimeSec, noAttempt);
 	if (iResult == SOCKET_ERROR)
 	{
 		iResult = WSAGetLastError();
@@ -270,14 +270,16 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 	}
 	else if (iResult == 0)
 	{
-		// If the virtual circuit was closed gracefully, and all the data was received, then a <recv> will return immediately with zero bytes read.
 		printf("\nTarget closed connection gracefully.");
 		return CLOSED_GRACEFULLY;
 	}
 	else if (iResult > 0)
 	{
-		expectedPayloadSize = outputMsg->size - 4;
-		if (expectedPayloadSize >= 4)
+		expectedPayloadSize = outputMsg->size - 4; // do not calculate size of second field in Message header
+
+		// todo mozda ovde calloc ako expectedPayloadSize!=0
+		if (expectedPayloadSize != 0)
+		//if (expectedPayloadSize >= 4)
 			outputMsg->payload = (char*)calloc(expectedPayloadSize, sizeof(char));
 		//printf("\n----------received first %d header bytes, expected %d payload bytes", iResult, expectedPayloadSize);
 	}
@@ -285,13 +287,13 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 	// node skoro istom frekvencijoom salje (samo malo sporije)
 	if (isRegMsg && noAttempt != INFINITE_ATTEMPT_NO) {
 		noAttempt /= 10;
-		sleepTime *= (10 * 6);
+		sleepTimeMs *= (10 * 6);
 	}
 
-	while (currLength < expectedPayloadSize)
+	while (currPayloadLength < expectedPayloadSize)
 	{
 		//printf("\n-------------Looping for receiving payload");
-		iResult = tryToSelect(communicationSocket, false, sleepTime, selectTimeSec, noAttempt);
+		iResult = tryToSelect(communicationSocket, false, sleepTimeMs, selectTimeSec, noAttempt);
 		if (iResult == SOCKET_ERROR)
 		{
 			iResult = WSAGetLastError();
@@ -304,10 +306,10 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 			return TIMED_OUT;
 		}
 
-		iResult = recv(communicationSocket, outputMsg->payload + currLength, expectedPayloadSize - currLength, 0);
+		iResult = recv(communicationSocket, outputMsg->payload + currPayloadLength, expectedPayloadSize - currPayloadLength, 0);
 
 		if (iResult > 0)
-			currLength += iResult;
+			currPayloadLength += iResult;
 
 		// else cases -> there is no whole message received for sure
 		else if (iResult == 0)
