@@ -30,13 +30,19 @@ enum MsgType
 	ShutDown,
 	Ping,
 
+	// for master
 	TransactionRequest,
 	TransactionRequestApproved,
 	TransactionRequestRejected,
-	PREPARE,
-	COMMIT,
-	ROLLBACK,
-	
+
+	// for node
+	PREPARE_REQUEST,
+	COMMIT_REQUEST,
+	ROLLBACK_REQUEST,
+	PREPARE_REPLY,
+	COMMIT_REPLY,
+	ROLLBACK_REPLY,
+
 	Data
 };
 
