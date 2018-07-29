@@ -31,9 +31,10 @@ enum MsgType
 	Ping,
 
 	// for master
-	TransactionRequest,
-	TransactionRequestApproved,
-	TransactionRequestRejected,
+	TransactionCoordinatorRequest,
+	TransactionCoordinatorRequestApproved,
+	TransactionCoordinatorRequestRejected,
+	TransactionFinishedRequest,
 
 	// for node
 	PREPARE_REQUEST,
