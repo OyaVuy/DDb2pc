@@ -6,10 +6,12 @@
 void InitStorage(StorageManager* storageMng)
 {
 	storageMng->isInit = true;
-	std::atomic <int> dataCount = 0;
+	std::atomic <int> elementsCount = 0;
 	std::atomic <int> dataCount_Lvl1 = 0;
+	InitializeCriticalSection(&storageMng->cs_Storage);
 }
 
+// todo srediti da nijedna od ovih metoda ne prolazi ako je cs_Storage zauzet
 void InitLinkedList(LinkedList* list)
 {
 	InitializeCriticalSection(&list->cs_Data);
@@ -65,8 +67,8 @@ void StoreMessage(StorageManager* storage, Message* msgToStore)
 	ClientMessageHeader request = *((ClientMessageHeader*)msgToStore->payload);
 	int clientId = request.clientId;
 	int nodeId = request.originNodeId;
-	storage->dataCount++;
-	int msgCounter = request.originNodeCounter = storage->dataCount;
+	storage->elementsCount++;
+	int msgCounter = request.originNodeCounter = storage->elementsCount;
 
 	// STORE WHOLE MESSAGE
 	// now we have prepared keys....
@@ -90,3 +92,10 @@ void StoreMessage(StorageManager* storage, Message* msgToStore)
 	AddNodeToList(storage->data_Lvl1, newConcreteDataNode);
 }
 
+void FreeStorage(StorageManager* storageMng)
+{
+	if (storageMng->isInit)
+	{
+		DeleteCriticalSection(&storageMng->cs_Storage);
+	}
+}

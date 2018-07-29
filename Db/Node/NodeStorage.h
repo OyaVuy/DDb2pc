@@ -42,7 +42,8 @@ typedef struct
 // then we are on level2, where we have on access based on level2key
 typedef struct
 {
-	std::atomic <int> dataCount; // cumulative
+	CRITICAL_SECTION cs_Storage;
+	std::atomic <int> elementsCount; // cumulative
 	std::atomic <int> dataCount_Lvl1;
 	std::atomic <bool> isInit;
 	LinkedList* data_Lvl1;
@@ -53,4 +54,4 @@ void InitLinkedList(LinkedList* list);
 void AddNodeToList(LinkedList* list, ListNode* node);
 void StoreMessage(StorageManager* storage, Message* msgToStore);
 ListNode* FindNodeInList(LinkedList* list, int nodeKey);
-
+void FreeStorage(StorageManager* storageMng);
