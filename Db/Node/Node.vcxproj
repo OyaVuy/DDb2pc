@@ -155,13 +155,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="NodeStorage.h" />
+    <ClInclude Include="CustomLinkedList.h" />
     <ClInclude Include="resource2.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CustomLinkedList.cpp" />
     <ClCompile Include="Node.cpp" />
-    <ClCompile Include="NodeStorage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Node.rc" />
