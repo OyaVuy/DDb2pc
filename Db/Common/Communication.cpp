@@ -246,7 +246,6 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 	int currPayloadLength = 0;
 	int expectedPayloadSize = -1;
 
-	//printf("\n------receiveMessage, before receiving first 8 header bytes");
 	iResult = tryToSelect(communicationSocket, false, sleepTimeMs, selectTimeSec, noAttempt);
 	if (iResult == SOCKET_ERROR)
 	{
@@ -256,7 +255,6 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 	}
 	if (iResult == 0)
 	{
-		//printf("\nTime limit expired for select (recv) operation (first 8 bytes)");
 		return TIMED_OUT;
 	}
 
@@ -265,7 +263,6 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 	if (iResult == SOCKET_ERROR)
 	{
 		iResult = WSAGetLastError();
-		//ErrorHandlerTxt(TEXT("receiveMessage.recv (first 8 bytes)"));
 		return iResult;
 	}
 	else if (iResult == 0)
@@ -277,11 +274,10 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 	{
 		expectedPayloadSize = outputMsg->size - 4; // do not calculate size of second field in Message header
 
-		// todo mozda ovde calloc ako expectedPayloadSize!=0
+		// todo proveriti ovde calloc ako expectedPayloadSize!=0
 		if (expectedPayloadSize != 0)
 		//if (expectedPayloadSize >= 4)
 			outputMsg->payload = (char*)calloc(expectedPayloadSize, sizeof(char));
-		//printf("\n----------received first %d header bytes, expected %d payload bytes", iResult, expectedPayloadSize);
 	}
 
 	// node skoro istom frekvencijoom salje (samo malo sporije)
@@ -302,7 +298,7 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 		}
 		if (iResult == 0)
 		{
-			printf("\nTime limit expired for select operation (payload)");
+			//printf("\nTime limit expired for select operation (payload)");
 			return TIMED_OUT;
 		}
 
@@ -323,9 +319,9 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 			ErrorHandlerTxt(TEXT("receiveMessage.recv (payload)"));
 			return iResult;
 		}
-		//printf("\n-------------currently received = %d payload bytes", currLength);
+		printf("\n-------------currently received = %d payload bytes", currPayloadLength);
 	}
-	//printf("\n----------before receiveMessage returning, received totally %d bytes\n", currLength + 8);
+	printf("\n----------before receiveMessage returning, received totally %d bytes\n", currPayloadLength + 8);
 	return 0;
 }
 
