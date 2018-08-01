@@ -49,6 +49,7 @@ ListNode* FindNodeInList(LinkedList* list, int key1, int key2, int key3)
 	return retVal;
 }
 
+// ulaz je niz sekvencijalnih poruka tipa Message
 void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequential)
 {
 	// check when to use cs
@@ -62,8 +63,9 @@ void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequentia
 	}
 	else
 	{
-		 request  =*(ClientMessageHeader*)(msgToStore->payload);
+		request = *(ClientMessageHeader*)(msgToStore->payload);
 	}
+	// todo proveriti ovo storeovanje kako ide
 	int clientId = request.clientId;
 	int nodeId = request.originNodeId;
 	storage->nodesCount++;
@@ -101,6 +103,43 @@ void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequentia
 	AddNodeToList(storage, newConcreteDataNode);
 }
 
+void StoreOneMessage(LinkedList* storage, Message* msgToStore)
+{
+	if (!storage->isInit)
+		InitList(storage);
+
+	ClientMessageHeader request;
+	request = *((ClientMessageHeader*)msgToStore->payload);
+
+	int clientId = request.clientId;
+	int nodeId = request.originNodeId;
+	storage->nodesCount++;
+	int msgCounter = request.originNodeCounter = storage->nodesCount;
+
+	// whole Message has to be stored, in order for client to retrieve it with keys
+	size_t concreteDataSize = msgToStore->size - sizeof(MsgType) - sizeof(ClientMessageHeader);
+	int concreteDataPayload_Offset = sizeof(ClientMessageHeader); // offset from Message.payload
+	char* pConcreteData = msgToStore->payload + concreteDataPayload_Offset;
+
+	// imprtant: 
+	// later free first pData in node, 
+	// than remove node from list while saving reference to node, 
+	// then free node 
+	int wholeMessageSize = msgToStore->size + 4;
+	char* newConcreteData = (char*)calloc(wholeMessageSize, sizeof(char));
+
+	memcpy(newConcreteData, msgToStore, 8);
+	memcpy(newConcreteData + 8, msgToStore->payload, msgToStore->size - 4);
+
+	ListNode* newConcreteDataNode = (ListNode*)malloc(sizeof(ListNode));
+	newConcreteDataNode->key1 = clientId;
+	newConcreteDataNode->key2 = nodeId;
+	newConcreteDataNode->key3 = msgCounter;
+	newConcreteDataNode->pNext = nullptr;
+	newConcreteDataNode->pData = newConcreteData;
+
+	AddNodeToList(storage, newConcreteDataNode);
+}
 
 void ClearList(LinkedList * list)
 {

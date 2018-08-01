@@ -319,9 +319,9 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 			ErrorHandlerTxt(TEXT("receiveMessage.recv (payload)"));
 			return iResult;
 		}
-		printf("\n-------------currently received = %d payload bytes", currPayloadLength);
+		//printf("\n-------------currently received = %d payload bytes", currPayloadLength);
 	}
-	printf("\n----------before receiveMessage returning, received totally %d bytes\n", currPayloadLength + 8);
+	//printf("\n----------before receiveMessage returning, received totally %d bytes\n", currPayloadLength + 8);
 	return 0;
 }
 
