@@ -49,10 +49,8 @@ ListNode* FindNodeInList(LinkedList* list, int key1, int key2, int key3)
 	return retVal;
 }
 
-// ulaz je niz sekvencijalnih poruka tipa Message
 void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequential)
 {
-	// check when to use cs
 	if (!storage->isInit)
 		InitList(storage);
 
@@ -65,7 +63,9 @@ void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequentia
 	{
 		request = *(ClientMessageHeader*)(msgToStore->payload);
 	}
-	// todo proveriti ovo storeovanje kako ide
+	
+
+	// todo proveriti ovo storeovanje node id-a 
 	int clientId = request.clientId;
 	int nodeId = request.originNodeId;
 	storage->nodesCount++;
