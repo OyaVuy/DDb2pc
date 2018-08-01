@@ -26,7 +26,7 @@ typedef struct ListNodeT
 typedef struct
 {
 	std::atomic <bool> isInit;
-	std::atomic <int> count;
+	std::atomic <int> nodesCount;
 	CRITICAL_SECTION cs_Data;
 	ListNode* pHead;
 	ListNode* pTail;

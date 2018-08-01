@@ -9,7 +9,7 @@ void InitList(LinkedList* list)
 {
 	InitializeCriticalSection(&list->cs_Data);
 	list->isInit = true;
-	list->count = 0;
+	list->nodesCount = 0;
 	list->pHead = list->pTail = nullptr;
 }
 
@@ -27,13 +27,12 @@ void AddNodeToList(LinkedList* list, ListNode* node)
 		node->pNext = nullptr;
 		list->pTail = node;
 	}
-	//list->count++;
 }
 
 ListNode* FindNodeInList(LinkedList* list, int key1, int key2, int key3)
 {
 	ListNode* retVal = nullptr;
-	if (list->count == 0 ||
+	if (list->nodesCount == 0 ||
 		key1 < 0 || key2 < 0 || key3 < 0)
 		return nullptr;
 
@@ -67,8 +66,8 @@ void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequentia
 	}
 	int clientId = request.clientId;
 	int nodeId = request.originNodeId;
-	storage->count++;
-	int msgCounter = request.originNodeCounter = storage->count;
+	storage->nodesCount++;
+	int msgCounter = request.originNodeCounter = storage->nodesCount;
 
 	// whole Message has to be stored, in order for client to retrieve it with keys
 	size_t concreteDataSize = msgToStore->size - sizeof(MsgType) - sizeof(ClientMessageHeader);
