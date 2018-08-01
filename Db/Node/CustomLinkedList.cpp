@@ -16,7 +16,6 @@ void InitList(LinkedList* list)
 // adding at end
 void AddNodeToList(LinkedList* list, ListNode* node)
 {
-	// todo cs data?
 	node->pNext = nullptr;
 	if (list->pHead == nullptr)
 	{
@@ -28,7 +27,7 @@ void AddNodeToList(LinkedList* list, ListNode* node)
 		node->pNext = nullptr;
 		list->pTail = node;
 	}
-	list->count++;
+	//list->count++;
 }
 
 ListNode* FindNodeInList(LinkedList* list, int key1, int key2, int key3)
@@ -51,28 +50,47 @@ ListNode* FindNodeInList(LinkedList* list, int key1, int key2, int key3)
 	return retVal;
 }
 
-void StoreMessage(LinkedList* storage, Message* msgToStore)
+void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequential)
 {
 	// check when to use cs
 	if (!storage->isInit)
 		InitList(storage);
 
-	ClientMessageHeader request = *((ClientMessageHeader*)msgToStore->payload);
+	ClientMessageHeader request;
+	if (!isDataSequential)
+	{
+		request = *((ClientMessageHeader*)msgToStore->payload);
+	}
+	else
+	{
+		 request  =*(ClientMessageHeader*)(msgToStore->payload);
+	}
 	int clientId = request.clientId;
 	int nodeId = request.originNodeId;
 	storage->count++;
 	int msgCounter = request.originNodeCounter = storage->count;
 
 	// whole Message has to be stored, in order for client to retrieve it with keys
-	//size_t concreteDataSize = msgToStore->size - sizeof(MsgType) - sizeof(ClientMessageHeader);
-	//int concreteDataIdx = sizeof(ClientMessageHeader);
-	//char* pConcreteData = msgToStore->payload + concreteDataIdx;
+	size_t concreteDataSize = msgToStore->size - sizeof(MsgType) - sizeof(ClientMessageHeader);
+	int concreteDataPayload_Offset = sizeof(ClientMessageHeader); // offset from Message.payload
+	char* pConcreteData = msgToStore->payload + concreteDataPayload_Offset;
 
+	// imprtant: 
+	// later free first pData in node, 
+	// than remove node from list while saving reference to node, 
+	// then free node 
 	int wholeMessageSize = msgToStore->size + 4;
 	char* newConcreteData = (char*)calloc(wholeMessageSize, sizeof(char));
 
-	memcpy(newConcreteData, msgToStore, wholeMessageSize);
-	//memcpy(newConcreteData, pConcreteData, wholeMessageSize);
+	if (!isDataSequential)
+	{
+		memcpy(newConcreteData, msgToStore, 8);
+		memcpy(newConcreteData + 8, msgToStore->payload, msgToStore->size - 4);
+	}
+	else
+	{
+		memcpy(newConcreteData, msgToStore, wholeMessageSize);
+	}
 
 	ListNode* newConcreteDataNode = (ListNode*)malloc(sizeof(ListNode));
 	newConcreteDataNode->key1 = clientId;
