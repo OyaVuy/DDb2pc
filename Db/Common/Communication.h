@@ -59,7 +59,8 @@ enum TransactionRequestType
 {
 	READ,
 	WRITE,
-	REMOVE
+	REMOVE_ONE,
+	REMOVE_ALL
 };
 
 /*
@@ -80,8 +81,8 @@ typedef struct
 	// combination of these 3
 	// fileds uniquely identifies message
 	int clientId;
-	int originNodeId; // these two fields are setted up by node
-	int originNodeCounter;
+	int originId; // these two fields are setted up by node
+	int originCounter;
 	TransactionRequestType reqType;
 }ClientMessageHeader;
 

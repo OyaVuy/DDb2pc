@@ -39,4 +39,4 @@ void StoreOneMessage(LinkedList* storage, Message* msgToStore);
 void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequential);
 ListNode* FindNodeInList(LinkedList* list, int key1, int key2, int key3);
 void ClearList(LinkedList * list);
-void RemoveFromList(LinkedList *list, int key1, int key2, int key3);
+bool RemoveFromList(LinkedList *list, int key1, int key2, int key3);

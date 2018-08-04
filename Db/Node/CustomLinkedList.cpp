@@ -4,7 +4,6 @@
 // da si imala vise listi nivoa, moglo je biti manje zakljucavanja, na nivou nodea - klijenta..msm svakako se jedan klijenat opsluzuje
 
 
-// todo srediti da nijedna od ovih metoda ne prolazi ako je cs_Storage zauzet
 void InitList(LinkedList* list)
 {
 	InitializeCriticalSection(&list->cs_Data);
@@ -49,6 +48,7 @@ ListNode* FindNodeInList(LinkedList* list, int key1, int key2, int key3)
 	return retVal;
 }
 
+// todo use critical section
 void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequential)
 {
 	if (!storage->isInit)
@@ -63,13 +63,13 @@ void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequentia
 	{
 		request = *(ClientMessageHeader*)(msgToStore->payload);
 	}
-	
 
-	// todo proveriti ovo storeovanje node id-a 
+
+	// todo fix key-s associated with origin node...
 	int clientId = request.clientId;
-	int nodeId = request.originNodeId;
+	int nodeId = request.originId;
 	storage->nodesCount++;
-	int msgCounter = request.originNodeCounter = storage->nodesCount;
+	int msgCounter = request.originCounter = storage->nodesCount;
 
 	// whole Message has to be stored, in order for client to retrieve it with keys
 	size_t concreteDataSize = msgToStore->size - sizeof(MsgType) - sizeof(ClientMessageHeader);
@@ -112,9 +112,9 @@ void StoreOneMessage(LinkedList* storage, Message* msgToStore)
 	request = *((ClientMessageHeader*)msgToStore->payload);
 
 	int clientId = request.clientId;
-	int nodeId = request.originNodeId;
+	int nodeId = request.originId;
 	storage->nodesCount++;
-	int msgCounter = request.originNodeCounter = storage->nodesCount;
+	int msgCounter = request.originCounter = storage->nodesCount;
 
 	// whole Message has to be stored, in order for client to retrieve it with keys
 	size_t concreteDataSize = msgToStore->size - sizeof(MsgType) - sizeof(ClientMessageHeader);
@@ -143,10 +143,47 @@ void StoreOneMessage(LinkedList* storage, Message* msgToStore)
 
 void ClearList(LinkedList * list)
 {
+	if (list->nodesCount == 0)
+		return;
 
+	ListNode* temp = list->pHead;
+	ListNode* previous = list->pHead;
+	do {
+
+		if (temp->pData != nullptr)
+			free(temp->pData);
+
+		previous = temp;
+		temp = temp->pNext;
+
+		free(previous);
+
+	} while (temp != nullptr);
 }
 
-void RemoveFromList(LinkedList *list, int key1, int key2, int key3)
+bool RemoveFromList(LinkedList *list, int key1, int key2, int key3)
 {
+	int retVal = false;
+	if (list->nodesCount == 0 || key1 < 0 || key2 < 0 || key3 < 0)
+		return retVal;
 
+	ListNode* temp = list->pHead;
+	ListNode* previous = list->pHead;
+	do {
+		if (temp->key1 == key1 && temp->key2 == key2 && temp->key3 == key3)
+		{
+			// node is found...
+			// first free pData, than rearrange links in list, remamber this node, and then free the node
+			if (temp->pData != nullptr)
+				free(temp->pData);
+
+			previous->pNext = temp->pNext;
+			free(temp);
+			list->nodesCount--;
+			break;
+		}
+		previous = temp;
+	} while ((temp = temp->pNext) != nullptr);
+
+	return retVal;
 }
