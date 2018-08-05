@@ -48,7 +48,7 @@ ListNode* FindNodeInList(LinkedList* list, int key1, int key2, int key3)
 	return retVal;
 }
 
-// todo use critical section
+// todo check critical section usage
 void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequential)
 {
 	if (!storage->isInit)
@@ -64,7 +64,6 @@ void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequentia
 		request = *(ClientMessageHeader*)(msgToStore->payload);
 	}
 
-
 	// todo fix key-s associated with origin node...
 	int clientId = request.clientId;
 	int nodeId = request.originId;
@@ -76,10 +75,6 @@ void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequentia
 	int concreteDataPayload_Offset = sizeof(ClientMessageHeader); // offset from Message.payload
 	char* pConcreteData = msgToStore->payload + concreteDataPayload_Offset;
 
-	// imprtant: 
-	// later free first pData in node, 
-	// than remove node from list while saving reference to node, 
-	// then free node 
 	int wholeMessageSize = msgToStore->size + 4;
 	char* newConcreteData = (char*)calloc(wholeMessageSize, sizeof(char));
 
@@ -156,9 +151,83 @@ void ClearList(LinkedList * list)
 		previous = temp;
 		temp = temp->pNext;
 
+		list->nodesCount--;
 		free(previous);
 
 	} while (temp != nullptr);
+}
+
+bool RemoveFromListByKey1(LinkedList *list, int key1)
+{
+	int retVal = false;
+	EnterCriticalSection(&list->cs_Data);
+	if (list->nodesCount > 0 && key1 > 0)
+	{
+		ListNode* next = list->pHead;
+		ListNode* current = list->pHead;
+
+		// removal from first place
+		while (true)
+		{
+			current = next;
+			if (current == NULL || current->key1 != key1)
+				break;
+
+			if (list->pTail == list->pHead)
+				list->pTail = current->pNext;
+
+			list->pHead = current->pNext;
+
+			if (current->pData != nullptr)
+				free(current->pData);
+
+			next = current->pNext;
+
+			free(current);
+			list->nodesCount -= 1;
+		}
+
+		if (list->nodesCount >= 2)
+		{
+			// no more occurence at first place.
+			// now previous will always exist
+			next = list->pHead;
+			current = list->pHead;
+			ListNode* previous = list->pHead;
+
+			do {
+				previous = current;
+				current = next;
+				next = next->pNext;
+
+				if (current->key1 == key1)
+				{
+					if (current == list->pTail)
+					{
+						list->pTail = previous;
+						list->pTail->pNext = NULL;
+					}
+					else
+					{
+						if (previous == list->pHead)
+							list->pHead = current->pNext;
+						previous->pNext = current->pNext;
+					}
+
+					if (current->pData != nullptr)
+						free(current->pData);
+
+					free(current);
+					list->nodesCount -= 1;
+				}
+
+			} while (next != nullptr);
+
+		}
+
+	}
+	LeaveCriticalSection(&list->cs_Data);
+	return retVal;
 }
 
 bool RemoveFromList(LinkedList *list, int key1, int key2, int key3)
@@ -172,14 +241,18 @@ bool RemoveFromList(LinkedList *list, int key1, int key2, int key3)
 	do {
 		if (temp->key1 == key1 && temp->key2 == key2 && temp->key3 == key3)
 		{
-			// node is found...
-			// first free pData, than rearrange links in list, remamber this node, and then free the node
 			if (temp->pData != nullptr)
 				free(temp->pData);
 
 			previous->pNext = temp->pNext;
 			free(temp);
 			list->nodesCount--;
+
+			if (list->nodesCount == 0)
+			{
+				list->pHead = list->pTail = nullptr;
+			}
+
 			break;
 		}
 		previous = temp;
