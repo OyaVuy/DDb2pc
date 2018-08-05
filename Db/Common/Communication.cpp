@@ -274,9 +274,7 @@ int receiveMessage(SOCKET communicationSocket, Message *outputMsg, int sleepTime
 	{
 		expectedPayloadSize = outputMsg->size - 4; // do not calculate size of second field in Message header
 
-		// todo proveriti ovde calloc ako expectedPayloadSize!=0
 		if (expectedPayloadSize != 0)
-		//if (expectedPayloadSize >= 4)
 			outputMsg->payload = (char*)calloc(expectedPayloadSize, sizeof(char));
 	}
 

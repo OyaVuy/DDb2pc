@@ -6,6 +6,7 @@
 #include <Windows.h>
 
 #pragma pack(1)
+
 typedef struct
 {
 	int clientId;
@@ -31,7 +32,6 @@ typedef struct
 	ListNode* pHead;
 	ListNode* pTail;
 }LinkedList;
-
 
 void InitList(LinkedList* list);
 void AddNodeToList(LinkedList* list, ListNode* node);

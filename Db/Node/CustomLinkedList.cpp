@@ -1,8 +1,5 @@
 #include "CustomLinkedList.h"
 
-// napisati u potencijalna oboljsanja sta si mogla od struktura da koristis-napravis...bla bla
-// da si imala vise listi nivoa, moglo je biti manje zakljucavanja, na nivou nodea - klijenta..msm svakako se jedan klijenat opsluzuje
-
 
 void InitList(LinkedList* list)
 {
@@ -15,6 +12,7 @@ void InitList(LinkedList* list)
 // adding at end
 void AddNodeToList(LinkedList* list, ListNode* node)
 {
+	EnterCriticalSection(&list->cs_Data);
 	node->pNext = nullptr;
 	if (list->pHead == nullptr)
 	{
@@ -26,6 +24,7 @@ void AddNodeToList(LinkedList* list, ListNode* node)
 		node->pNext = nullptr;
 		list->pTail = node;
 	}
+	LeaveCriticalSection(&list->cs_Data);
 }
 
 ListNode* FindNodeInList(LinkedList* list, int key1, int key2, int key3)
@@ -48,7 +47,6 @@ ListNode* FindNodeInList(LinkedList* list, int key1, int key2, int key3)
 	return retVal;
 }
 
-// todo check critical section usage
 void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequential)
 {
 	if (!storage->isInit)
@@ -64,7 +62,7 @@ void StoreMessage(LinkedList* storage, Message* msgToStore, bool isDataSequentia
 		request = *(ClientMessageHeader*)(msgToStore->payload);
 	}
 
-	// todo fix key-s associated with origin node...
+	// todo: fix key-s associated with origin node...
 	int clientId = request.clientId;
 	int nodeId = request.originId;
 	storage->nodesCount++;
@@ -116,10 +114,6 @@ void StoreOneMessage(LinkedList* storage, Message* msgToStore)
 	int concreteDataPayload_Offset = sizeof(ClientMessageHeader); // offset from Message.payload
 	char* pConcreteData = msgToStore->payload + concreteDataPayload_Offset;
 
-	// imprtant: 
-	// later free first pData in node, 
-	// than remove node from list while saving reference to node, 
-	// then free node 
 	int wholeMessageSize = msgToStore->size + 4;
 	char* newConcreteData = (char*)calloc(wholeMessageSize, sizeof(char));
 

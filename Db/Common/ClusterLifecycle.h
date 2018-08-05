@@ -20,11 +20,12 @@
 typedef struct
 {
 	int nodeId;
-	int intIpAddress; // in little endian format
+	int intIpAddress; // little endian format
 	USHORT portForNodes;
 	USHORT portForClients;
 }NodeRegData;
 
+// communication endpoint 
 typedef struct
 {
 	int ipAddress;

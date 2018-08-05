@@ -78,8 +78,8 @@ typedef struct
 
 typedef struct
 {
-	// combination of these 3
-	// fileds uniquely identifies message
+	// combination of first 3
+	// fields uniquely identifies message
 	int clientId;
 	int originId; // these two fields are setted up by node
 	int originCounter;
